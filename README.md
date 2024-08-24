@@ -84,6 +84,10 @@ For publishing:
 - **X Pro Account**: To maximize efficiency, consider using a Pro X account.
 - **Targeted Content**: Focus on specific news categories to enhance engagement and reach.
 
+## Deployment Advice
+
+This app runs perfectly locally. For proper deployment, I recommend using a **virtual machine** rather than a SaaS platform like Azure or Heroku. Additionally, I strongly advise deploying it on a **Windows-based server** to ensure compatibility and performance.
+
 ## Discussion
 
 This app is still under development and open for contributions. The idea behind this app is to work around social media account limitations and merge the power of Python for scraping with OpenAI in the media and news sectors. The ad revenue of X isn't the best out there, and the rules for monetizing your account may be among the strictest, with 5 million impressions needed over 3 months at a minimum. This app can help you overcome these hurdles by continuously posting every day.
