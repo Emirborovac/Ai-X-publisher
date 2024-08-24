@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X AI Pro</title>
+    <style>
+        /* General Styling */
+        body {
+            background-color: #000000;
+            color: #FFFFFF;
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        h1 {
+            color: #1DA1F2;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            animation: glow 1s ease-in-out infinite alternate;
+        }
+
+        .task-container {
+            display: flex;
+            justify-content: space-between;
+            width: 90%;
+            max-width: 1200px;
+            margin-bottom: 2rem;
+        }
+
+        .task {
+            flex: 1;
+            margin: 0 1rem;
+            text-align: center;
+            background-color: #16181C;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s ease;
+        }
+
+        .task:hover {
+            transform: translateY(-5px);
+        }
+
+        .task h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #1DA1F2;
+        }
+
+        input,
+        button,
+        progress {
+            width: 100%;
+            margin: 0.5rem 0;
+            box-sizing: border-box;
+        }
+
+        input {
+            padding: 0.75rem;
+            font-size: 1rem;
+            color: #FFFFFF;
+            background-color: #2C2F33;
+            border: 2px solid #1DA1F2;
+            border-radius: 5px;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus {
+            border-color: #1DA1F2;
+        }
+
+        button {
+            padding: 0.75rem;
+            font-size: 1rem;
+            color: #FFFFFF;
+            background-color: #1DA1F2;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            outline: none;
+        }
+
+        button:hover {
+            background-color: #1A91DA;
+        }
+
+        progress {
+            height: 20px;
+            background-color: #2C2F33;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        progress::-webkit-progress-bar {
+            background-color: #2C2F33;
+        }
+
+        progress::-webkit-progress-value,
+        progress::-moz-progress-bar {
+            background-color: #1DA1F2;
+        }
+
+        p {
+            font-size: 1rem;
+            color: #1DA1F2;
+            margin-top: 1rem;
+        }
+
+        span {
+            font-weight: bold;
+            color: #1A91DA;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px #1DA1F2, 0 0 20px #1DA1F2, 0 0 30px #1DA1F2, 0 0 40px #1DA1F2;
+            }
+            to {
+                text-shadow: 0 0 20px #1A91DA, 0 0 30px #1A91DA, 0 0 40px #1A91DA, 0 0 50px #1A91DA;
+            }
+        }
+    </style>
+    <script>
+        function startTask(taskName) {
+            let limit = taskName === 'scrape' ? document.getElementById(`${taskName}-limit`).value || 20 : 0;
+            fetch(`/custom_admin/start-task/${taskName}/?limit=${limit}`)
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.status);
+                    pollProgress(taskName, data.total || data.limit);  // Pass total for rephrase/post, limit for scrape
+                });
+        }
+        
+        function pollProgress(taskName, total) {
+            const progressElement = document.getElementById(`${taskName}-progress`);
+            const statusElement = document.getElementById(`${taskName}-status`);
+            let pollInterval = setInterval(() => {
+                fetch(`/custom_admin/get-task-progress/${taskName}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        progressElement.max = total;  // Use the total or limit passed from the startTask function
+                        progressElement.value = data.progress;
+                        statusElement.innerText = `${data.progress} of ${total} articles processed`;
+                        if (data.progress >= total) {
+                            clearInterval(pollInterval);
+                            statusElement.innerText = "Task completed";
+                        }
+                    });
+            }, 1000);  // Poll every second
+        }
+    </script>
+    
+</head>
+<body>
+    <h1>X AI Pro</h1>
+    <div class="task-container">
+        <div class="task">
+            <h2>Start Scraping</h2>
+            <input type="number" id="scrape-limit" placeholder="Enter limit (default is 20)">
+            <button onclick="startTask('scrape')">Start</button>
+            <progress value="0" max="100" id="scrape-progress"></progress>
+            <p>Progress: <span id="scrape-status">Not started</span></p>
+        </div>
+        <div class="task">
+            <h2>Rephrase Articles</h2>
+            <button onclick="startTask('rephrase')">Start</button>
+            <progress value="0" max="100" id="rephrase-progress"></progress>
+            <p>Progress: <span id="rephrase-status">Not started</span></p>
+        </div>
+        <div class="task">
+            <h2>Post Articles</h2>
+            <button onclick="startTask('post')">Start</button>
+            <progress value="0" max="100" id="post-progress"></progress>
+            <p>Progress: <span id="post-status">Not started</span></p>
+        </div>
+    </div>
+</body>
+</html>
